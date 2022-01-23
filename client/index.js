@@ -1,9 +1,12 @@
 import "./index.scss";
 
-const server = "http://localhost:3042";
+const dotenv = require('dotenv');
+const result = dotenv.config({ path: '../.env' });
+const port = process.env.PORT;
+const server = `http://localhost:${port}`;
 
-document.getElementById("exchange-address").addEventListener('input', ({ target: {value} }) => {
-  if(value === "") {
+document.getElementById("exchange-address").addEventListener('input', ({ target: { value } }) => {
+  if (value === "") {
     document.getElementById("balance").innerHTML = 0;
     return;
   }
@@ -26,7 +29,7 @@ document.getElementById("transfer-amount").addEventListener('click', () => {
 
   const request = new Request(`${server}/send`, { method: 'POST', body });
 
-  fetch(request, { headers: { 'Content-Type': 'application/json' }}).then(response => {
+  fetch(request, { headers: { 'Content-Type': 'application/json' } }).then(response => {
     return response.json();
   }).then(({ balance }) => {
     document.getElementById("balance").innerHTML = balance;

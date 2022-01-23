@@ -1,0 +1,14 @@
+SERVER_PORT = 3042
+NUM_ACCOUNTS = 10
+BALANCES = 1000
+
+PRIVATE_KEY_0 = <address>
+PRIVATE_KEY_1 = <address>
+PRIVATE_KEY_2 = <address>
+PRIVATE_KEY_3 = <address>
+PRIVATE_KEY_4 = <address>
+PRIVATE_KEY_5 = <address>
+PRIVATE_KEY_6 = <address>
+PRIVATE_KEY_7 = <address>
+PRIVATE_KEY_8 = <address>
+PRIVATE_KEY_9 = <address>
