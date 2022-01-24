@@ -9,11 +9,10 @@ const getSignature = (privateKey) => {
   const key = ec.keyFromPrivate(privateKey);
 
   // TODO: change this message to whatever you would like to sign
-  const message = "Hi there from Jason :)";
-
+  const message = salty() + "Hi there from Jason :)";
   const msgHash = SHA256(message);
-
   const signature = key.sign(msgHash.toString());
+  
 
   return {
     message,
@@ -22,6 +21,15 @@ const getSignature = (privateKey) => {
       s: signature.s.toString(16)
     }
   };
+}
+
+const salty = (n) => {
+  n = n || 16;
+  var result = '';
+  while (n--) {
+    result += Math.floor(Math.random() * 16).toString(16).toUpperCase();
+  }
+  return result;
 }
 
 module.exports = { getSignature };

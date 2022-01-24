@@ -1,8 +1,8 @@
 import "./index.scss";
 
 const dotenv = require('dotenv');
-const result = dotenv.config({ path: '../.env' });
-const port = process.env.PORT;
+dotenv.config({ path: '../.env' });
+const port = process.env.SERVER_PORT;
 const server = `http://localhost:${port}`;
 
 document.getElementById("exchange-address").addEventListener('input', ({ target: { value } }) => {
