@@ -92,10 +92,19 @@ app.use(express.json());
 app.get('/balance/:address', (req, res) => {
   const { address } = req.params;
   const _key = parseInt(address);
-  const balance = (_key >= 0 && balances.has(_key)) ? balances.get(_key) : "NA";
+  const _publicKey = (_key >= 0 && keyMap.has(_key)) ? getPublicKey(keyMap.get(_key)) : "NA";
+  const _balance = (_key >= 0 && balances.has(_key)) ? balances.get(_key) : "NA";
 
-  res.send({ balance });
+  res.send({ balance: _balance, address: _publicKey });
 });
+
+app.post('/confirm', (req, res) => {
+  const { recipient } = req.body;
+  const _key = keyMap.get(parseInt(recipient));
+  const _address = getPublicKey(_key);
+
+  res.send({ address: `0x${_address}` });
+})
 
 app.post('/send', (req, res) => {
   const { sender, recipient, amount } = req.body;
@@ -104,14 +113,16 @@ app.post('/send', (req, res) => {
   const _amount = parseInt(amount.replace(/,/g, ''));
 
   try {
+    // Requirements
     assert.oneOf(_sender, params.activeAccount, "You are not authorized");
     assert.hasAnyKeys(keyMap, _sender, "Sender is not a valid participant");
     assert.isNumber(_amount, "'SEND AMOUNT' must be a number");
     assert.hasAnyKeys(keyMap, _recipient, "Recipient is not a valid participant");
     assert.notStrictEqual(_sender, _recipient, "You cannot send to yourself");
     assert.isAtMost(_amount, balances.get(_sender), "Insufficient funds");
-    assert.notStrictEqual(_amount, 0, "You cannot send 0");
+    assert.isAtLeast(_amount, 1, "You must send at least 1");
 
+    // Sign message/transaction
     const _signature = getSignature(keyMap.get(_sender));
     assert.isTrue(verifySignature(keyMap.get(_sender), _signature), "Transaction not signed by user");
 
@@ -122,10 +133,11 @@ app.post('/send', (req, res) => {
     balances.set(_recipient, (_balanceRecipient || 0) + +_amount);
   }
   catch (err) {
-    console.log(err.message)
+    res.send({ balance: balances.get(_sender), message: err.message.toString() });
+    return
   }
 
-  res.send({ balance: balances.get(_sender) });
+  res.send({ balance: balances.get(_sender), message: "Success!" });
 });
 
 app.listen(port, () => {

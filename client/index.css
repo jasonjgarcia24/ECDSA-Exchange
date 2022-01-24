@@ -1,0 +1,116 @@
+body {
+  font-family: 'Muli', sans-serif;
+  font-weight: 300;
+}
+
+input {
+  padding: 9px 25px;
+  border-radius: 5px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.container-components {
+  text-align: center;
+}
+
+.hdr {
+  margin: 0;
+  padding: 0 0 20px 0;
+}
+
+.container-wallet,
+.container-send {
+  background: #eee;
+  width: 600px;
+  margin: 20px auto;
+  padding: 20px 0;
+  border-radius: 10px;
+}
+
+.container-send-input {
+  width: 500px;
+  margin: 0 auto;
+  padding: 0;
+  border-radius: 0;
+}
+
+.container-send-query {
+  width: 250px;
+  margin: 15px auto 0 auto;
+  padding: 0;
+  border-radius: 0;
+}
+
+.content {
+  width: 500px;
+  background-color: white;
+  margin: 15px auto 10px auto;
+  padding: 5px 0;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+.content-tx-recipient {
+  display: none;
+}
+
+.content-address:before {
+  content: "Address: ";
+}
+
+.content-balance:before {
+  content: "Balance: ";
+}
+
+.content-tx-recipient:before {
+  content: "Recipient: ";
+}
+
+.btn {
+  width: auto;
+  display: inline-block;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 5px;
+  border: none;
+  padding: 9px 25px;
+  font-size: 0.7em;
+  letter-spacing: 0.7px;
+  box-shadow: 0 1px 8px 0 rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.19);
+}
+
+.btn-send {
+  margin-bottom: 15px;
+  background: #518e65;
+}
+
+.btn-query-reject {
+  background: #ff0022;
+  display: none;
+}
+
+.btn-query-confirm {
+  background: #0022ff;
+  display: none;
+}
+
+.btn-send:hover {
+  cursor: pointer;
+  background: #0c8733;
+}
+
+.btn-query-reject:hover {
+  cursor: pointer;
+  background: #ff0000
+}
+
+.btn-query-confirm:hover {
+  cursor: pointer;
+  background: #0000ff
+}
+
+.btn:active {
+  -webkit-transform: translateY(1px);
+          transform: translateY(1px);
+}

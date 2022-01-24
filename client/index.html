@@ -4,24 +4,40 @@
   <meta charset="utf-8" />
   <title>ECDSA Exchange</title>
   <script type="module" src="index.js"></script>
+  <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
-  <div class="components">
-    <div class="wallet">
-      <h1> Your Wallet </h1>
-      <input type="text" id="exchange-address" placeholder="Your Address" />
-      <div id="balance">
+  <div class="container container-components">
+    <div class="container container-wallet">
+      <h1 class="hdr hdr-wallet"> Your Wallet </h1>
+      <input type="text" id="exchange-address" placeholder="Account ID" />
+      <div class="content content-address" id="address">
+        0x000..0000
+      </div>
+      <div class="content content-balance" id="balance">
         0
       </div>
     </div>
 
-    <div class="send">
-      <h1> Send Amount </h1>
-      <input type="text" id="send-amount" placeholder="Send Amount" />
-      <input type="text" id="recipient" placeholder="Recipient" />
-      <div class="button" id="transfer-amount">
-        Transfer Amount
+    <div class="container container-send">
+      <h1 class="hdr"> Send Amount </h1>
+      <div class="container container-send-input">
+        <input type="text" class="input-send input-send-amount" id="send-amount" placeholder="Send Amount" />
+        <input type="text" class="input-send input-recipient" id="recipient" placeholder="Recipient" />
+      </div>
+      <div class="container container-send-query">
+        <button class="btn btn-send" id="transfer-amount">Transfer Amount</button>
+        <div class="container">
+          <input name="reject" class="btn btn-query btn-query-reject" id="reject" type="submit" value="Reject">
+          <input name="confirm" class="btn btn-query btn-query-confirm" id="confirm" type="submit" value="Sign">
+        </div>
+      </div>
+      <div class="content content-tx-recipient" id="recipient-address">
+        0x000..000
+      </div>
+      <div class="content content-tx-status" id="tx-status">
+        Transaction status...
       </div>
     </div>
   </div>
