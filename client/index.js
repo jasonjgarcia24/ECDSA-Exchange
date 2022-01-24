@@ -5,6 +5,7 @@ if (module.hot) {
 }
 
 const dotenv = require('dotenv');
+const { clear } = require('toastr');
 dotenv.config({ path: '../.env' });
 const port = process.env.SERVER_PORT;
 const server = `http://localhost:${port}`;
@@ -17,13 +18,15 @@ const inputRecipient = document.getElementById("recipient");
 const btnTransfer = document.getElementById("transfer-amount");
 
 const btnReject = document.getElementById("reject");
-const btnConfirm = document.getElementById("confirm");
+const btnSign = document.getElementById("sign");
 const divTxRecipientAddress = document.getElementById("recipient-address");
 const divTxStatus = document.getElementById("tx-status");
 
+const DEFAULT_ADDRESS = "0x000..000";
+
+
 inputSender.addEventListener('input', ({ target: { value } }) => {
-  inputAmount.value = "";
-  inputRecipient.value = "";
+  clearTransaction();
 
   if (value === "") {
     divBalance.innerHTML = 0;
@@ -39,47 +42,15 @@ inputSender.addEventListener('input', ({ target: { value } }) => {
   });
 });
 
-inputRecipient.addEventListener('input', ({ target: { value } }) => {
-  divTxStatus.innerHTML = "Transaction status...";
+inputAmount.addEventListener('input', () => {
+  clearTransaction();
+});
 
-  divTxRecipientAddress.innerHTML = "0x000...000";
-
-  btnReject.style.display = "none";
-  btnConfirm.style.display = "none";
-  divTxRecipientAddress.style.display = "none";
+inputRecipient.addEventListener('input', () => {
+  clearTransaction();
 });
 
 btnTransfer.addEventListener('click', () => {
-  const recipient = document.getElementById("recipient").value;
-
-  const body = JSON.stringify({
-    recipient
-  });
-
-  const request = new Request(`${server}/confirm`, { method: 'POST', body });
-
-  fetch(request, { headers: { 'Content-Type': 'application/json' } }).then(response => {
-    return response.json();
-  }).then(({ address }) => {
-    divTxRecipientAddress.innerHTML = address;
-    divTxStatus.innerHTML = "Sign to confirm transaction.";
-
-    btnReject.style.display = "inline-block";
-    btnConfirm.style.display = "inline-block";
-    divTxRecipientAddress.style.display = "block";
-  });
-
-});
-
-btnReject.addEventListener('click', () => {
-  divTxStatus.innerHTML = "Transaction rejected by user."
-
-  btnReject.style.display = "none";
-  btnConfirm.style.display = "none";
-  divTxRecipientAddress.style.display = "none";
-});
-
-btnConfirm.addEventListener('click', () => {
   const sender = inputSender.value;
   const amount = inputAmount.value;
   const recipient = inputRecipient.value;
@@ -92,12 +63,58 @@ btnConfirm.addEventListener('click', () => {
 
   fetch(request, { headers: { 'Content-Type': 'application/json' } }).then(response => {
     return response.json();
+  }).then(({ address, message }) => {
+    if (address !== DEFAULT_ADDRESS) {
+      btnTransfer.disabled = true;
+      btnTransfer.style.cursor = "not-allowed";
+      divTxRecipientAddress.innerHTML = address;
+
+      btnReject.style.display = "inline-block";
+      btnSign.style.display = "inline-block";
+      divTxRecipientAddress.style.display = "block";
+    }
+    else {
+      clearTransaction();
+    }
+
+    divTxStatus.innerHTML = message;
+  });
+
+});
+
+btnReject.addEventListener('click', () => {
+  clearTransaction();
+  divTxStatus.innerHTML = "Transaction rejected by user.";
+});
+
+btnSign.addEventListener('click', () => {
+  const sender = inputSender.value;
+  const amount = inputAmount.value;
+  const recipient = inputRecipient.value;
+
+  const body = JSON.stringify({
+    sender, amount, recipient
+  });
+
+  const request = new Request(`${server}/sign`, { method: 'POST', body });
+
+  fetch(request, { headers: { 'Content-Type': 'application/json' } }).then(response => {
+    return response.json();
   }).then(({ balance, message }) => {
+    clearTransaction();
     divBalance.innerHTML = balance;
     divTxStatus.innerHTML = message;
-
-    btnReject.style.display = "none";
-    btnConfirm.style.display = "none";
-    divTxRecipientAddress.style.display = "none";
   });
 });
+
+const clearTransaction = () => {
+  btnTransfer.disabled = false;
+  btnTransfer.style.cursor = "pointer";
+  divTxStatus.innerHTML = "Transaction status...";
+
+  divTxRecipientAddress.innerHTML = "0x000...000";
+
+  btnReject.style.display = "none";
+  btnSign.style.display = "none";
+  divTxRecipientAddress.style.display = "none";
+};

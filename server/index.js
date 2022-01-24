@@ -98,16 +98,8 @@ app.get('/balance/:address', (req, res) => {
   res.send({ balance: _balance, address: _publicKey });
 });
 
-app.post('/confirm', (req, res) => {
-  const { recipient } = req.body;
-  const _key = keyMap.get(parseInt(recipient));
-  const _address = getPublicKey(_key);
-
-  res.send({ address: `0x${_address}` });
-})
-
 app.post('/send', (req, res) => {
-  const { sender, recipient, amount } = req.body;
+  const { sender, amount, recipient } = req.body;
   const _sender = parseInt(sender);
   const _recipient = parseInt(recipient);
   const _amount = parseInt(amount.replace(/,/g, ''));
@@ -121,7 +113,25 @@ app.post('/send', (req, res) => {
     assert.notStrictEqual(_sender, _recipient, "You cannot send to yourself");
     assert.isAtMost(_amount, balances.get(_sender), "Insufficient funds");
     assert.isAtLeast(_amount, 1, "You must send at least 1");
+  }
+  catch (err) {
+    res.send({ address: "0x000..000", message: err.message.toString() });
+    return
+  }
 
+  const _key = keyMap.get(_recipient);
+  const _address = getPublicKey(_key);
+
+  res.send({ address: `0x${_address}`, message: "Sign to confirm transaction." });
+})
+
+app.post('/sign', (req, res) => {
+  const { sender, recipient, amount } = req.body;
+  const _sender = parseInt(sender);
+  const _recipient = parseInt(recipient);
+  const _amount = parseInt(amount.replace(/,/g, ''));
+
+  try {
     // Sign message/transaction
     const _signature = getSignature(keyMap.get(_sender));
     assert.isTrue(verifySignature(keyMap.get(_sender), _signature), "Transaction not signed by user");
