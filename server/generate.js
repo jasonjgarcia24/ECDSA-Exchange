@@ -3,7 +3,7 @@ const ec = new EC('secp256k1');
 const dotenv = require('dotenv');
 dotenv.config({ path: '../.env' });
 
-const myArgs = process.argv.slice(2);
+const myArgs = process.argv.includes("--demo") ? process.env.DEMO_CONFIG.split(" ") : process.argv.slice(2);
 
 const genKeyPair = () => { return ec.genKeyPair() };
 const genAccountFromPrivateKey = (privateKey) => { return ec.keyFromPrivate(privateKey) };
@@ -19,6 +19,7 @@ while (i < myArgs.length) {
     case '--participants':
     case '--P':
       genAccounts = (myArgs[i + 1].toLowerCase() === 'explicit') ? genAccountFromPrivateKey : genKeyPair;
+      break;
   }
   i += 2;
 }
