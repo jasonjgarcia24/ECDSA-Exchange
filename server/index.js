@@ -16,8 +16,6 @@ const keyMap = setKeyMap();
 const params = parseParameters(keyMap);
 const balances = setBalanceMap();
 
-console.log(params.activeAccount);
-
 
 function parseParameters(_keyMap) {
   const myArgs = process.argv.includes("--demo") ? process.env.DEMO_CONFIG.split(" ") : process.argv.slice(2);
@@ -69,7 +67,19 @@ function setKeyMap() {
   for (i = 0; i < numAccounts; i++) {
     _key = (genAccounts.name === 'genKeyPair') ? genAccounts() : genAccounts(process.env[`PRIVATE_KEY_${i}`]);
     _keyMap.set(i, _key);
+
+    console.log(`(${i}) - Public key: ${getPublicKey(_key)}`)
   }
+
+  console.log("\n")
+
+  for (i = 0; i < numAccounts; i++) {
+    _key = _keyMap.get(i, _key);
+
+    console.log(`(${i}) - Private key: ${_key.getPrivate().toString()}`)
+  }
+
+  console.log("\n")
 
   return _keyMap;
 }
@@ -115,6 +125,7 @@ app.post('/send', (req, res) => {
     assert.isAtLeast(_amount, 1, "You must send at least 1");
   }
   catch (err) {
+    console.log(err.message.toString());
     res.send({ address: "0x000..000", message: err.message.toString() });
     return
   }
@@ -143,6 +154,7 @@ app.post('/sign', (req, res) => {
     balances.set(_recipient, (_balanceRecipient || 0) + +_amount);
   }
   catch (err) {
+    console.log(err.message.toString());
     res.send({ balance: balances.get(_sender), message: err.message.toString() });
     return
   }
