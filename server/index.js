@@ -67,19 +67,7 @@ function setKeyMap() {
   for (i = 0; i < numAccounts; i++) {
     _key = (genAccounts.name === 'genKeyPair') ? genAccounts() : genAccounts(process.env[`PRIVATE_KEY_${i}`]);
     _keyMap.set(i, _key);
-
-    console.log(`(${i}) - Public key: ${getPublicKey(_key)}`)
   }
-
-  console.log("\n")
-
-  for (i = 0; i < numAccounts; i++) {
-    _key = _keyMap.get(i, _key);
-
-    console.log(`(${i}) - Private key: ${_key.getPrivate().toString()}`)
-  }
-
-  console.log("\n")
 
   return _keyMap;
 }
@@ -91,6 +79,23 @@ function setBalanceMap() {
     _balances.set(k, parseInt(process.env.BALANCES));
   }
 
+  // Print out accounts with balances
+  console.log("\n")
+
+  for (i = 0; i < numAccounts; i++) {
+    key = keyMap.get(i);
+    console.log(`(${i}) - Public key: ${getPublicKey(key)} --- Balance: ${_balances.get(i)}`)
+  }
+
+  console.log("\n")
+
+  for (i = 0; i < numAccounts; i++) {
+    key = keyMap.get(i);
+    console.log(`(${i}) - Private key: ${key.getPrivate().toString()}`)
+  }
+
+  console.log("\n")
+
   return _balances;
 }
 
@@ -99,6 +104,7 @@ function setBalanceMap() {
 app.use(cors());
 app.use(express.json());
 
+// Display balance of address to frontend
 app.get('/balance/:address', (req, res) => {
   const { address } = req.params;
   const _key = parseInt(address);
@@ -108,6 +114,7 @@ app.get('/balance/:address', (req, res) => {
   res.send({ balance: _balance, address: _publicKey });
 });
 
+// Commit a transaction for approval (still will need to sign)
 app.post('/send', (req, res) => {
   const { sender, amount, recipient } = req.body;
   const _sender = parseInt(sender);
@@ -136,6 +143,7 @@ app.post('/send', (req, res) => {
   res.send({ address: `0x${_address}`, message: "Sign to confirm transaction." });
 })
 
+// Sign a transaction and submit
 app.post('/sign', (req, res) => {
   const { sender, recipient, amount } = req.body;
   const _sender = parseInt(sender);
@@ -144,7 +152,7 @@ app.post('/sign', (req, res) => {
 
   try {
     // Sign message/transaction
-    const _signature = getSignature(keyMap.get(_sender));
+    const _signature = getSignature(keyMap.get(_sender), _sender, _amount, _recipient);
     assert.isTrue(verifySignature(keyMap.get(_sender), _signature), "Transaction not signed by user");
 
     let _balanceSender = balances.get(_sender);
