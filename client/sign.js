@@ -9,7 +9,7 @@ const getSignature = (privateKey, sender, amount, recipient) => {
   const key = ec.keyFromPrivate(privateKey);
 
   // TODO: change this message to whatever you would like to sign
-  message = salty() + { sender, amount, recipient };
+  const message = salty() + { sender, amount, recipient };
   const msgHash = SHA256(message);
   const signature = key.sign(msgHash.toString());
 

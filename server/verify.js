@@ -9,4 +9,13 @@ const verifySignature = (key, signObj) => {
   return key.verify(msgHash, signObj.signature);
 }
 
-module.exports = { verifySignature }
+const verifySignatureWithoutPrivateKey = (pubPoint, signObj) => {
+  const key = ec.keyFromPublic(pubPoint, 'hex');
+
+  const msgHash = SHA256(signObj.message).toString();
+  const results = key.verify(msgHash, signObj.signature);
+
+  return results;
+}
+
+module.exports = { verifySignature, verifySignatureWithoutPrivateKey }
