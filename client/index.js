@@ -47,20 +47,17 @@ const keyMap = new Map();
 function setKeyMap() {
   if ([...keyMap].length) { return }
   let _key;
-  let _account;
 
   for (i = 0; i < numAccounts; i++) {
     _key = (genAccounts.name === 'genKeyPair') ? genAccounts() : genAccounts(privAccounts[i]);
     keyMap.set(i, _key);
   }
-  console.log(keyMap)
 }
 
 const setAccounts = () => {
   const addresses = [];
 
   [...keyMap].map(([_, _key]) => {
-    console.log(_key)
     addresses.push(getPublicKey(_key));
   });
 

@@ -10,7 +10,6 @@ const { verifySignatureWithoutPrivateKey } = require('./verify');
 const port = process.env.SERVER_PORT;
 const balanceMap = new Map();
 const params = parseParameters();
-console.log(params)
 
 
 function parseParameters() {
@@ -42,10 +41,8 @@ function parseParameters() {
   return { demo, activeIDs, privateKeys, participants };
 }
 
-
 const initBalanceMap = (addresses) => {
   if ([...balanceMap].length) { return }
-  console.log("why am I here...?")
 
   addresses.map((address) => {
     balanceMap.set(address, parseInt(process.env.BALANCES));
