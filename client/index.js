@@ -4,7 +4,6 @@ if (module.hot) {
 
 const dotenv = require('dotenv');
 const SHA256 = require('crypto-js/sha256');
-const { clear } = require('toastr');
 const assert = require('chai').assert;
 dotenv.config({ path: '../.env' });
 
@@ -28,59 +27,40 @@ const numAccounts = parseInt(process.env.NUM_ACCOUNTS);
 const port = process.env.SERVER_PORT;
 const server = `http://localhost:${port}`;
 
+const privAccounts = [
+  process.env["PRIVATE_KEY_0"],
+  process.env["PRIVATE_KEY_1"],
+  process.env["PRIVATE_KEY_2"],
+  process.env["PRIVATE_KEY_3"],
+  process.env["PRIVATE_KEY_4"],
+  process.env["PRIVATE_KEY_5"],
+  process.env["PRIVATE_KEY_6"],
+  process.env["PRIVATE_KEY_7"],
+  process.env["PRIVATE_KEY_8"],
+  process.env["PRIVATE_KEY_9"],
+];
+
+
 const keyMap = new Map();
 
 
-function parseParameters(_keyMap) {
-  const myArgs = process.argv.includes("--demo") ? process.env.DEMO_CONFIG.split(" ") : process.argv.slice(2);
-  let activeAccount = [];
-  let participants = 'random';
-
-  let i = 0;
-  while (i < myArgs.length) {
-
-    switch (myArgs[i]) {
-      case '--account':
-      case '--A':
-        // Get index of key in keyMap
-        myArgs[i + 1] = Array.from(myArgs[i + 1].replace(/^\[| |\]$/g, '').split(','));
-
-        myArgs[i + 1].map((_account) => {
-          let thisAccount = 0;
-
-          [..._keyMap].map(([ii, _key]) => {
-            thisAccount = (_key.getPrivate().toString(16) === _account) ? ii : thisAccount
-          })
-
-          activeAccount.push(thisAccount);
-        });
-        break;
-      case '--participants':
-      case '--P':
-        // Get participant type ('explicit' or 'random')
-        activeAccount = activeAccount ? activeAccount : 0;
-        participants = myArgs[i + 1];
-        break;
-    }
-    i += 2;
-  }
-
-  return { activeAccount, participants };
-}
-
 function setKeyMap() {
+  if ([...keyMap].length) { return }
   let _key;
+  let _account;
 
   for (i = 0; i < numAccounts; i++) {
-    _key = (genAccounts.name === 'genKeyPair') ? genAccounts() : genAccounts(process.env[`PRIVATE_KEY_${i}`]);
+    _key = (genAccounts.name === 'genKeyPair') ? genAccounts() : genAccounts(privAccounts[i]);
     keyMap.set(i, _key);
   }
+  console.log(keyMap)
 }
 
 const setAccounts = () => {
   const addresses = [];
 
   [...keyMap].map(([_, _key]) => {
+    console.log(_key)
     addresses.push(getPublicKey(_key));
   });
 
@@ -117,7 +97,6 @@ const getBalances = async (_keyMap) => {
   return balances;
 };
 
-const params = parseParameters(keyMap);
 setKeyMap();
 setAccounts();
 getBalances(keyMap)
@@ -150,12 +129,38 @@ inputRecipient.addEventListener('input', () => {
   clearTransaction();
 });
 
-btnTransfer.addEventListener('click', () => {
+btnTransfer.addEventListener('click', async () => {
   const sender = inputSender.value;
   const amount = inputAmount.value;
   const recipient = inputRecipient.value;
 
+  let _senderPubKey = getPublicKey(keyMap.get(parseInt(sender)));
+  const _senderPrivKey = keyMap.get(parseInt(sender)).getPrivate().toString(16);
+
   try {
+    const request1 = new Request(`${server}/params`, { method: 'POST' });
+
+    await fetch(request1, { headers: { 'Content-Type': 'application/json' } }).then(response => {
+      return response.json();
+    }).then(({ params }) => {
+      if (params.activeIDs.length) {
+        assert.oneOf(sender, params.activeAccount, "You are not authorized");
+      }
+
+      if (params.privateKeys) {
+        let _tempPrivKey;
+        const _activeIDs = [];
+        _senderPubKey = `0x${_senderPubKey.substring(0, 3)}...${_senderPubKey.slice(-4)}`;
+
+        [...keyMap].map(([_, _key], i) => {
+          _tempPrivKey = _key.getPrivate().toString(16);
+          if (params.privateKeys.includes(_tempPrivKey)) _activeIDs.push(i);
+        })
+
+        if (!params.privateKeys.includes(_senderPrivKey)) assert.fail(`Account "${_senderPubKey}" not authorized. Expected ${_activeIDs}.`);
+      }
+    });
+
     assert.isAtMost(parseInt(recipient), numAccounts, "Recipient is not a valid participant");
 
     const _recipientPubKey = getPublicKey(keyMap.get(parseInt(recipient)));
@@ -164,9 +169,9 @@ btnTransfer.addEventListener('click', () => {
       sender, amount, recipient
     });
 
-    const request = new Request(`${server}/send`, { method: 'POST', body });
+    const request2 = new Request(`${server}/send`, { method: 'POST', body });
 
-    fetch(request, { headers: { 'Content-Type': 'application/json' } }).then(response => {
+    fetch(request2, { headers: { 'Content-Type': 'application/json' } }).then(response => {
       return response.json();
     }).then(({ message }) => {
       if (_recipientPubKey !== DEFAULT_ADDRESS) {
@@ -186,6 +191,7 @@ btnTransfer.addEventListener('click', () => {
     });
   }
   catch (err) {
+    clearTransaction();
     divTxStatus.innerHTML = err.message.toString();
   }
 });

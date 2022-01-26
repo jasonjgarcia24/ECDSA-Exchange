@@ -2,7 +2,6 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const dotenv = require('dotenv');
-const SHA256 = require('crypto-js/sha256');
 const assert = require('chai').assert;
 dotenv.config({ path: '../.env' });
 
@@ -10,20 +9,56 @@ const { verifySignatureWithoutPrivateKey } = require('./verify');
 
 const port = process.env.SERVER_PORT;
 const balanceMap = new Map();
+const params = parseParameters();
+console.log(params)
+
+
+function parseParameters() {
+  const myArgs = process.argv.includes("--demo") ? process.env.DEMO_CONFIG.split(" ") : process.argv.slice(2);
+  const demo = process.argv.includes("--demo") ? true : false;
+  let activeIDs = [];
+  let privateKeys = [];
+  let participants = 'random';
+
+  let i = 0;
+  while (i < myArgs.length) {
+
+    switch (myArgs[i]) {
+      case '--account':
+      case '--A':
+        // Get index of key in keyMap
+        privateKeys = Array.from(myArgs[i + 1].replace(/^\[| |\]$/g, '').split(','));
+        break;
+      case '--participants':
+      case '--P':
+        // Get participant type ('explicit' or 'random')
+        activeIDs = activeIDs ? activeIDs : 0;
+        participants = myArgs[i + 1];
+        break;
+    }
+    i += 2;
+  }
+
+  return { demo, activeIDs, privateKeys, participants };
+}
 
 
 const initBalanceMap = (addresses) => {
+  if ([...balanceMap].length) { return }
+  console.log("why am I here...?")
+
   addresses.map((address) => {
     balanceMap.set(address, parseInt(process.env.BALANCES));
   });
 
-  // console.log("\nAccounts:");
+  console.log("\nAvailable Accounts");
+  console.log("==================");
 
-  // [...balanceMap].map(([_pubKey, _balance], i) => {
-  //   console.log(`(${i}) --- Public Key: ${_pubKey} --- Balance: ${_balance}`)
-  // });
+  [...balanceMap].map(([_pubKey, _balance], i) => {
+    console.log(`(${i}) ${_pubKey} (${_balance} BTC)`)
+  });
 
-  // console.log("\n");
+  console.log("\n");
 };
 
 // localhost can have cross origin errors
@@ -38,6 +73,12 @@ app.get('/balance/:address', (req, res) => {
 
   res.send({ balance: _balance });
 });
+
+app.post('/params', (_, res) => {
+  const params = parseParameters();
+
+  res.send({ params: params });
+})
 
 // Initialize accounts and their balances
 app.post('/balancemap', (req, _) => {
@@ -68,8 +109,6 @@ app.post('/send', (req, res) => {
 
   try {
     // Requirements
-    // assert.oneOf(_sender, params.activeAccount, "You are not authorized");
-    assert.oneOf(_sender, [0], "You are not authorized");
     assert.hasAnyKeys(_validAccounts, _sender, "Sender is not a valid participant");
     assert.isNumber(_amount, "'SEND AMOUNT' must be a number");
     assert.hasAnyKeys(_validAccounts, _recipient, "Recipient is not a valid participant");

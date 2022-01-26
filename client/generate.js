@@ -8,9 +8,8 @@ const myArgs = process.argv.includes("--demo") ? process.env.DEMO_CONFIG.split("
 const genKeyPair = () => { return ec.genKeyPair() };
 const genAccountFromPrivateKey = (privateKey) => { return ec.keyFromPrivate(privateKey) };
 
-
 // Defaults
-let genAccounts = genKeyPair;
+let genAccounts = genAccountFromPrivateKey;
 
 // Set input parameter values
 let i = 0;
