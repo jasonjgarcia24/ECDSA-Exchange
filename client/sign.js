@@ -3,7 +3,6 @@ const SHA256 = require('crypto-js/sha256');
 
 const ec = new EC('secp256k1');
 
-// TODO: fill in your hex private key
 const getSignature = (privateKey, sender, amount, recipient) => {
 
   const key = ec.keyFromPrivate(privateKey);
