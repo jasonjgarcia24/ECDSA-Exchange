@@ -13,7 +13,6 @@ const getSignature = (privateKey, sender, amount, recipient) => {
   const msgHash = SHA256(message);
   const signature = key.sign(msgHash.toString());
 
-
   return {
     message,
     signature: {
