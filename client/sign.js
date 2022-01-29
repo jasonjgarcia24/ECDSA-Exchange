@@ -8,7 +8,8 @@ const getSignature = (privateKey, sender, amount, recipient) => {
 
   const key = ec.keyFromPrivate(privateKey);
 
-  // TODO: change this message to whatever you would like to sign
+  // To lock the message, we need to hash (SHA256) the message and sign/encrypt
+  // with the private key.
   const message = salty() + { sender, amount, recipient };
   const msgHash = SHA256(message);
   const signature = key.sign(msgHash.toString());
